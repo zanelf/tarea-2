@@ -19,14 +19,15 @@ int descriptor_socket_servidor;
 /**********************************************************/
 /* función catch que captura una interrupción             */
 /**********************************************************/
-void catch(int sig)
-{
+void catch(int sig){
 	printf("***Señal: %d atrapada!\n", sig);
   printf("***Cerrando servicio ...\n");
   close(descriptor_socket_servidor);
   printf("***Servicio cerrado.\n");
   exit(EXIT_SUCCESS);
 }
+
+
 
 
 /**********************************************************/
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
   }
 
 
-
+  // revisa que todo este en ord
   signal(SIGINT, &catch);
 
     printf("\n***Servidor ACTIVO escuchando en el puerto: %s ...\n",argv[1]);  

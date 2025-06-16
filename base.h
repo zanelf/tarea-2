@@ -4,7 +4,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#define n 100
+#define n 50
 
 typedef enum {
     DISPONIBLE,
@@ -56,6 +56,15 @@ void DeleteUser(char target[]){
             break;
          }
     }
+}
+
+usuario FindUser(char ID[]){
+    for (int i = 0; i < n; i++){
+        if(ID == Usuarios[i]->user)
+            return *Usuarios[i];
+    }
+
+
 }
 
 #endif 

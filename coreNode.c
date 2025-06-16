@@ -10,8 +10,23 @@
 //#include <arpa/inet.h>
 //#include <netdb.h>
 
+#define PORT 1313;
+
+
+
 #define MAX_MSG 500 //cant max mensajes
-int ServerDescSock;
+int ServerDescSock; //
+
+//mensaje de notificacion atrapada.
+void catch(int sig){
+	printf("***Señal: %d atrapada!\n", sig);
+  printf("***Cerrando servicio ...\n");
+  close(ServerDescSock);
+  printf("***Servicio cerrado.\n");
+  exit(EXIT_SUCCESS);
+}
+
+
 
 int main(int argc, char *argv[]){
     //freopen("output2.txt", "w+", stdout);
@@ -22,7 +37,7 @@ int main(int argc, char *argv[]){
     char mensaje_entrada[MAX_MSG], mensaje_salida[MAX_MSG]; //modificar estos valores a centro de entrada de mensajes y centro de salida
     int recibidos, enviados; //bytes recibidos 
 
-    //revisar mañana bien esto, aun no entiendo su uso correcto
+  //el puerto que le correspondera debe recibir solo eso 
   if (argc != 2) {
     printf("\n\nEl número de parámetros es incorrecto\n");
     printf("Use: %s <puerto>\n\n",argv[0]);
@@ -30,15 +45,28 @@ int main(int argc, char *argv[]){
   }
 
   // Creamos el socket del servidor
-    ServerDescSock = socket(AF_INET, SOCK_DGRAM,0); //crea el socket para el server
+    ServerDescSock = socket(AF_INET, SOCK_DGRAM,0); //crea el socket para el server y lo configuramos para UDP
 	if (ServerDescSock == -1) {
     printf("ERROR: problemas en la creacion del socket del servidor\n");
     exit(EXIT_FAILURE);
   }
-
     socket_servidor.sin_family = AF_INET; //define familia
     socket_servidor.sin_port = htons(atoi(argv[1])); //hace las conversiones para recibir un string y usarlo como valor de puerto (entregado manualmente)
     socket_servidor.sin_addr.s_addr = htonl(INADDR_ANY); //conversion para recibir una IP cualquiera
+
+
+	if( bind(ServerDescSock, (struct sockaddr*)&socket_servidor, sizeof(socket_servidor)) == -1) {
+    printf("ERROR al unir el socket a la dirección de la máquina servidora\n");
+    close(ServerDescSock);
+    exit(EXIT_FAILURE);
+  }
+
+
+
+  // revisa que todo este en orden y que todo funcione bien 
+  signal(SIGINT, &catch);
+
+
 
 
     return 0;
