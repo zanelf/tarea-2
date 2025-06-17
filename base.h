@@ -58,9 +58,9 @@ void DeleteUser(char target[]){
     }
 }
 
-usuario FindUser(char ID[]){
+usuario FindUserBPort(int port){
     for (int i = 0; i < n; i++){
-        if(ID == Usuarios[i]->user)
+        if(port == Usuarios[i]->user)
             return *Usuarios[i];
     }
 

@@ -10,9 +10,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define PORT 1313;
-
-
 
 #define MAX_MSG 500 //cant max mensajes
 int ServerDescSock; //
@@ -66,6 +63,8 @@ int main(int argc, char *argv[]){
   // revisa que todo este en orden y que todo funcione bien 
   signal(SIGINT, &catch);
 
+    printf("\nnodo principal en funcionamiento en el puerto: %s ...\n",argv[1]);  
+
   do{
 
     //Quedo a la espera de algun mensaje
@@ -80,14 +79,14 @@ int main(int argc, char *argv[]){
 	printf("<<Client envía >>: %s\n", mensaje_entrada);
     }
       //Envia el mensaje al cliente
-	sprintf(mensaje_salida, "El mensaje recibido fue --- %s ---.",mensaje_entrada);
+	printf(mensaje_salida, "El mensaje recibido fue --- %s ---.",mensaje_entrada);
 
     enviados = sendto(ServerDescSock, strcat(mensaje_salida,"\0"), MAX_MSG, 0, (struct sockaddr*)&socket_cliente, TargetSize);
 		  if (enviados<0) {
         printf("Error en sendto() \n");
         exit(EXIT_SUCCESS);
       } else
-        printf("<<Server replica>>: %s\n", mensaje_salida);z
+        printf("<<Server replica>>: %s\n", mensaje_salida);
   }while(1);
 
 
