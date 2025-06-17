@@ -37,8 +37,6 @@ int main() {
 
     IP = htonl(INADDR_ANY);
 
-
-
     //crea socket
     descriptor_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (descriptor_socket == -1) {
@@ -50,6 +48,8 @@ int main() {
     servidor.sin_port = htons(puerto);
     servidor.sin_addr.s_addr = inet_addr(IP);
 
+    //agregar envio de nombre al servidor a modo de ingreso de datos
+
     //conectar serv
     if (connect(descriptor_socket, (struct sockaddr*)&servidor, sizeof(servidor)) < 0) {
         perror("Error al conectar");
@@ -57,6 +57,11 @@ int main() {
     }
 
     printf("\nConectado como '%s'. Puede comenzar a escribir mensajes.\n", usuario);
+
+
+    //en el bucle de mensajes integrar una seccion que de al usuario, varias opciones, con todas las posibilidades expresadas en el diagrama de casos de uso.
+    //eso es pedir la lista de usuarios que estan en el servidor, abrir un modo de envio de mensajes hacia otros usuarios, poder ver lo mensajes que a recibido (algo asi como un buzon) y la opcion de leer dichos mensajes.
+    //tambien la opcion de desconectarse 
 
     //bucle de mensajes
     while (1) {

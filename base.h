@@ -34,11 +34,13 @@ void show(){
     }printf("\n==============\n");
 }
 
-void addUser(char user[50], int IP,int puerto){
+//|X|X|X|Y|X|X|X|X|X|X|Q|Q| |
+
+void addUser(char user[50], int IP,int puerto){ // (char user[50], int IP){
     if(currentUsers != n){
         usuario * aux;
         aux = (usuario*)malloc(sizeof(usuario)); 
-        strcpy(aux->user,user);aux->IP = IP;aux->puerto = puerto;
+        strcpy(aux->user,user);aux->IP = IP;aux->puerto = puerto;aux->estado = 1;
         Usuarios[last] = aux;
         last++; 
         while (Usuarios[last] != NULL)last++;
@@ -58,13 +60,23 @@ void DeleteUser(char target[]){
     }
 }
 
-usuario FindUserBPort(int port){
+
+
+int FindUser(char user[]){
     for (int i = 0; i < n; i++){
-        if(port == Usuarios[i]->user)
-            return *Usuarios[i];
+        int res = strcmp(user, Usuarios[i]->user);
+        if(0 == res)
+            return i;
     }
+    return -1;
+}
 
-
+int findUser(int IP){
+    for (int i = 0; i < n; i++){
+        if(IP == Usuarios[i]->IP)
+            return i;
+    }
+    return -1;
 }
 
 #endif 
