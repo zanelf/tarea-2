@@ -66,7 +66,35 @@ int main(int argc, char *argv[]){
   // revisa que todo este en orden y que todo funcione bien 
   signal(SIGINT, &catch);
 
+  do{
 
+    //Quedo a la espera de algun mensaje
+    destino_tam=sizeof(socket_cliente);
+    recibidos= recvfrom(descriptor_socket_servidor, mensaje_entrada, MAX_TAM_MENSAJE, 0, (struct sockaddr*)&socket_cliente, &destino_tam);
+    if(recibidos <0) {
+      printf("ERROR de recvfrom() \n");
+      exit(EXIT_FAILURE);
+    } else
+    {
+    printf("***Servidor recibe dato del cliente: %d.\n",socket_cliente.sin_addr.s_addr);
+	printf("<<Client envía >>: %s\n", mensaje_entrada);
+    }
+      //Envia el mensaje al cliente
+	sprintf(mensaje_salida, "El mensaje recibido fue --- %s ---.",mensaje_entrada);
+
+    enviados = sendto(descriptor_socket_servidor, strcat(mensaje_salida,"\0"), MAX_TAM_MENSAJE, 0, (struct sockaddr*)&socket_cliente, destino_tam);
+		  if (enviados<0) {
+        printf("Error en sendto() \n");
+        exit(EXIT_SUCCESS);
+      } else
+        printf("<<Server replica>>: %s\n", mensaje_salida);
+  }while(1);
+
+
+  printf("cerrando sistema\n");
+  close(ServerDescSock);
+  printf("loby cerrado\n");
+  exit(EXIT_SUCCESS);
 
 
     return 0;
