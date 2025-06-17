@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   //Se prepara la dirección de la máquina servidora
 	socket_destino.sin_family = AF_INET;
 	socket_destino.sin_addr.s_addr = inet_addr(argv[1]);
-	socket_destino.sin_port = htons(atoi(argv[2]));
+	socket_destino.sin_port = htons(atoi(argv[2])); //puerto llegada
 
 
 

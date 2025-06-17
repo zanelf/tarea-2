@@ -77,28 +77,41 @@ int main(int argc, char *argv[]){
         }else{
             int option = atoi(mensaje_entrada)        
             switch (option){ //
-            case 1: //recibir mensajes para enviar 
+            case 1: //recibir mensajes y los re-envia 
+                //una vez llega a este punto pregunta paso a paso, a quien quiere enviarle el mensaje primero
                 MSG_OUT = "<<SERVER>>: indique a quien quiere enviar el mensaje";  //intenta enviar un mensaje pidiendo el nombre del usuario al que quiere buscar.
-                char sender[50] = Usuarios[index]->user;
-                int receiver;
-
+                char sender[50] = Usuarios[index]->user; //guardamos el nombre de quien va a enviar el mensaje por seguridad
+                int receiver; //el IP objetivo de quien va a recibir el mensaje
+                //envia el mensaje
                 enviados = sendto(ServerDescSock, strcat(MSG_OUT,"\0"), MAX_MSG, 0, (struct sockaddr*)&cliente, TargetSize);
                     if (enviados<0) {
                         printf("<<MSG STATUS>>: Error sendto() \n");
-                    } else{
+                        break;
+                    }else{
+                        //si el mensaje se envia exitosamente llegara a la siguiente fase que es preguntar por el mensaje en si
                         printf("<<MSG STATUS>>: msg send\n");
                         //espera a que el usuario envie la respuesta
                         recibidos= recvfrom(ServerDescSock, mensaje_entrada, MAX_MSG, 0, (struct sockaddr*)&cliente, &TargetSize);
                             if(recibidos <0) {
                                 printf("<<MSG STATUS>>: ERROR de recvfrom() \n");
+                                break;
                             }else{
-                                if(0<FindUser(mensaje_entrada)){
-                                    receiver = Usuarios[FindUser(mensaje_entrada)]->IP;
-                                    MSG_OUT = "<<MSG STATUS>>: ingrese el mensaje que quiere enviar";
-                                    sendto(ServerDescSock, strcat(MSG_OUT,"\0"), MAX_MSG, 0, (struct sockaddr*)&cliente, TargetSize);    
+                                if(0<FindUser(mensaje_entrada)){ //si el nombre del objetivo existe 
+                                    receiver = Usuarios[FindUser(mensaje_entrada)]->IP; //la ip del objetivo
+                                    MSG_OUT = "<<MSG STATUS>>: ingrese el mensaje que quiere enviar"; 
+                                    sendto(ServerDescSock, strcat(MSG_OUT,"\0"), MAX_MSG, 0, (struct sockaddr*)&cliente, TargetSize);
+                                    //espera dicho mensaje     
                                     recibidos= recvfrom(ServerDescSock, mensaje_entrada, MAX_MSG, 0, (struct sockaddr*)&cliente, &TargetSize);
-                                    char mail[ MAX_MSG];
-
+                                    if(recibidos <0) {
+                                        printf("<<MSG STATUS>>: ERROR de recvfrom() \n");
+                                        break;
+                                    }else{
+                                        //cuando recibe el mensaje lo reempaca y lo envia;
+                                        struct sockaddr_in target;
+                                        target = cliente;
+                                        target.sin_addr.s_addr = receiver;
+                                        sendto(ServerDescSock, strcat(MSG_OUT,"\0"), MAX_MSG, 0, (struct sockaddr*)&target, TargetSize);    
+                                    }
                                 
                                 }else{
                                     MSG_OUT = "<<MSG STATUS>>: el nombre ingresado no existe, ingrese un nombre existente";
@@ -107,15 +120,20 @@ int main(int argc, char *argv[]){
                                 }
                             }
                     }
-            
             break;
-            
+            case 2:  // Listar usuarios conectados
+                strcpy(MSG_OUT, "<<SERVER>>: Usuarios conectados:\n");
+                for (int i = 0; i < getUserCount(); i++) {
+                    strcat(MSG_OUT, Usuarios[i]->user);
+                    strcat(MSG_OUT, "\n");
+                }
+                sendto(ServerDescSock, MSG_OUT, strlen(MSG_OUT) + 1, 0, (struct sockaddr*)&cliente, TargetSize);
+                break;
+            case 4:
+                deleteUser(cliente.sin_addr.s_addr);
             default:
                 break;
-            }
-        
-        
-        
+            }        
         }
 
         }

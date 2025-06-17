@@ -60,6 +60,20 @@ void DeleteUser(char target[]){
     }
 }
 
+void deleteUser(int IP){
+    for (int i = 0; i < n; i++){
+         if(Usuarios[i]->IP == IP){
+            usuario* aux = Usuarios[i];
+            free(aux);
+            Usuarios[i] = NULL;
+            last = i;
+            currentUsers--;
+            break;
+         }
+    }
+}
+
+
 
 
 int FindUser(char user[]){

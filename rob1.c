@@ -3,68 +3,71 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
-#define MAX_TAM_MENSAJE 512
+#define MAX_MSG 512
 
-char mensaje[MAX_TAM_MENSAJE];
+char mensaje[MAX_MSG];
 char usuario[50];
+int descriptor_socket;
+struct sockaddr_in servidor;
+socklen_t largo_servidor;
 
-void catch(int sig) {
+void cerrar_cliente(int sig) {
     printf("\n[!] Terminando cliente...\n");
+    snprintf(mensaje, MAX_MSG, "SALIR:%s", usuario);
+    sendto(descriptor_socket, mensaje, strlen(mensaje), 0,
+           (struct sockaddr *)&servidor, largo_servidor);
+    close(descriptor_socket);
     exit(0);
 }
 
+void enviar_y_mostrar_respuesta(const char *mensaje_envio) {
+    sendto(descriptor_socket, mensaje_envio, strlen(mensaje_envio), 0,
+           (struct sockaddr *)&servidor, largo_servidor);
+
+    char respuesta[MAX_MSG];
+    int len = recvfrom(descriptor_socket, respuesta, MAX_MSG - 1, 0, NULL, NULL);
+    if (len >= 0) {
+        respuesta[len] = '\0';
+        printf("[Servidor]: %s\n", respuesta);
+    } else {
+        perror("Error al recibir respuesta del servidor");
+    }
+}
+
 int main() {
-    int descriptor_socket;
-    struct sockaddr_in servidor;
-    int IP;
+    signal(SIGINT, cerrar_cliente);
+
+    char ip[20];
     int puerto;
 
-    signal(SIGINT, catch);
-
-    //datos usuari
-
+    printf("Ingrese IP del servidor: ");
+    scanf("%s", ip);
     printf("Ingrese puerto del servidor: ");
     scanf("%d", &puerto);
-
     printf("Ingrese nombre de usuario: ");
     scanf("%s", usuario);
-    getchar();
+    getchar();  // limpiar \n
 
-    IP = htonl(INADDR_ANY);
-
-    //crea socket
-    descriptor_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (descriptor_socket == -1) {
-        perror("Error al crear socket");
+    descriptor_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    if (descriptor_socket < 0) {
+        perror("Error al crear socket UDP");
         return 1;
     }
 
     servidor.sin_family = AF_INET;
     servidor.sin_port = htons(puerto);
-    servidor.sin_addr.s_addr = inet_addr(IP);
+    servidor.sin_addr.s_addr = inet_addr(ip);
+    largo_servidor = sizeof(servidor);
 
-    //agregar envio de nombre al servidor a modo de ingreso de datos
+    // Enviar nombre de usuario al servidor
+    snprintf(mensaje, MAX_MSG, "NOMBRE:%s", usuario);
+    enviar_y_mostrar_respuesta(mensaje);
 
-    //conectar serv
-	if( bind(descriptor_socket, (struct sockaddr*)&servidor, sizeof(servidor)) < 0) {
-        perror("Error al conectar");
-        return 1;
-  }
-
-
-    printf("\nConectado como '%s'. Puede comenzar a escribir mensajes.\n", usuario);
-
-
-    //en el bucle de mensajes integrar una seccion que de al usuario, varias opciones, con todas las posibilidades expresadas en el diagrama de casos de uso.
-    //eso es pedir la lista de usuarios que estan en el servidor, abrir un modo de envio de mensajes hacia otros usuarios, poder ver lo mensajes que a recibido (algo asi como un buzon) y la opcion de leer dichos mensajes.
-    //tambien la opcion de desconectarse 
-
-    //bucle de mensajes
+    // Menú principal
     while (1) {
         printf("\n=== Menú ===\n");
         printf("1. Ver lista de usuarios conectados\n");
@@ -72,15 +75,15 @@ int main() {
         printf("3. Ver mensajes recibidos (buzón)\n");
         printf("4. Leer mensaje por ID\n");
         printf("5. Desconectarse\n");
-        printf("escriba el numero de una opcion: ");
+        printf("Seleccione una opción: ");
 
-        int opcion;
-        scanf("%d",&opcion);
+        char opcion[10];
+        fgets(opcion, sizeof(opcion), stdin);
 
-        if (opcion == 1) {
+        if (strncmp(opcion, "1", 1) == 0) {
             enviar_y_mostrar_respuesta("LISTA");
 
-        } else if (opcion == 2) {
+        } else if (strncmp(opcion, "2", 1) == 0) {
             char destino[50], texto[MAX_MSG];
             printf("Usuario destino: ");
             fgets(destino, sizeof(destino), stdin);
@@ -93,11 +96,11 @@ int main() {
             snprintf(mensaje, MAX_MSG, "MSG:%s:%s:%s", usuario, destino, texto);
             enviar_y_mostrar_respuesta(mensaje);
 
-        } else if (opcion == 3) {
+        } else if (strncmp(opcion, "3", 1) == 0) {
             snprintf(mensaje, MAX_MSG, "BUZON:%s", usuario);
             enviar_y_mostrar_respuesta(mensaje);
 
-        } else if (opcion == 4) {
+        } else if (strncmp(opcion, "4", 1) == 0) {
             char id[10];
             printf("ID del mensaje: ");
             fgets(id, sizeof(id), stdin);
@@ -106,7 +109,7 @@ int main() {
             snprintf(mensaje, MAX_MSG, "LEER:%s:%s", usuario, id);
             enviar_y_mostrar_respuesta(mensaje);
 
-        } else if (opcion == 5) {
+        } else if (strncmp(opcion, "5", 1) == 0) {
             cerrar_cliente(SIGINT);
 
         } else {
@@ -114,6 +117,5 @@ int main() {
         }
     }
 
-    close(descriptor_socket);
     return 0;
 }
