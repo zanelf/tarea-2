@@ -5,10 +5,10 @@
 #include <signal.h>
 #include <sys/types.h>
 //estos 4 tiraran errores en windows porque estan pensados para linux, donde deberia probarse toda esta madre
-//#include <sys/socket.h> 
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
-//#include <netdb.h>
+#include <sys/socket.h> 
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #define PORT 1313;
 
@@ -69,8 +69,8 @@ int main(int argc, char *argv[]){
   do{
 
     //Quedo a la espera de algun mensaje
-    destino_tam=sizeof(socket_cliente);
-    recibidos= recvfrom(descriptor_socket_servidor, mensaje_entrada, MAX_TAM_MENSAJE, 0, (struct sockaddr*)&socket_cliente, &destino_tam);
+    TargetSize=sizeof(socket_cliente);
+    recibidos= recvfrom(ServerDescSock, mensaje_entrada, MAX_MSG, 0, (struct sockaddr*)&socket_cliente, &TargetSize);
     if(recibidos <0) {
       printf("ERROR de recvfrom() \n");
       exit(EXIT_FAILURE);
@@ -82,12 +82,12 @@ int main(int argc, char *argv[]){
       //Envia el mensaje al cliente
 	sprintf(mensaje_salida, "El mensaje recibido fue --- %s ---.",mensaje_entrada);
 
-    enviados = sendto(descriptor_socket_servidor, strcat(mensaje_salida,"\0"), MAX_TAM_MENSAJE, 0, (struct sockaddr*)&socket_cliente, destino_tam);
+    enviados = sendto(ServerDescSock, strcat(mensaje_salida,"\0"), MAX_MSG, 0, (struct sockaddr*)&socket_cliente, TargetSize);
 		  if (enviados<0) {
         printf("Error en sendto() \n");
         exit(EXIT_SUCCESS);
       } else
-        printf("<<Server replica>>: %s\n", mensaje_salida);
+        printf("<<Server replica>>: %s\n", mensaje_salida);z
   }while(1);
 
 
